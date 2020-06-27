@@ -7,6 +7,7 @@ package it.polito.tdp.crimes;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.crimes.model.Collegamento;
 import it.polito.tdp.crimes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,16 +26,16 @@ public class CrimesController {
     private URL location;
 
     @FXML // fx:id="boxCategoria"
-    private ComboBox<?> boxCategoria; // Value injected by FXMLLoader
+    private ComboBox<String> boxCategoria; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxMese"
-    private ComboBox<?> boxMese; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnAnalisi"
     private Button btnAnalisi; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxArco"
-    private ComboBox<?> boxArco; // Value injected by FXMLLoader
+    private ComboBox<Collegamento> boxArco; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnPercorso"
     private Button btnPercorso; // Value injected by FXMLLoader
@@ -46,12 +47,43 @@ public class CrimesController {
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
     	txtResult.appendText("Crea grafo...\n");
+    	
+    	String input = this.boxCategoria.getValue();
+    	Integer mese = this.boxMese.getValue();
+    	
+    	if(input == null) {
+    		txtResult.setText("Selezionare una categorie di crimine.");
+    		return;
+    	}
+    	if(mese == null) {
+    		txtResult.setText("Selezionare un mese.");
+    		return;
+    	}
+    	
+    	this.model.creaGrafo(input, mese);
+    	txtResult.appendText("\n\n#VERTICI: "+this.model.numeroVertici());
+    	txtResult.appendText("\n#ARCHI: "+this.model.numeroArchi());
+    	
+    	txtResult.appendText("\n\nTipi di crimini superiori alla media:\n"+this.model.superioreAllaMedia());
+    	
+    	//dopo aver creato il grafo popolo l'altra tendina degli archi
+    	this.boxArco.getItems().addAll(this.model.elencoArchi());
+    	
     }
     
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
     	txtResult.clear();
     	txtResult.appendText("Calcola percorso...\n");
+    	
+    	Collegamento inpu = this.boxArco.getValue();
+    	
+    	if(inpu == null) {
+    		txtResult.setText("Selezionare un arco!");
+    		return;
+    	}
+    	
+    	txtResult.appendText("\n\nCammino più lungo:\n"+this.model.calcolaPercorso(inpu));
     }
     
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -67,5 +99,7 @@ public class CrimesController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.boxCategoria.getItems().addAll(this.model.prendiCategorie());
+    	this.boxMese.getItems().addAll(this.model.prendiMesi());
     }
 }
